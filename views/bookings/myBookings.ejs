@@ -1,0 +1,129 @@
+<% layout("/layouts/boilerplate.ejs") -%>
+
+<div class="row mt-4 mb-5">
+  <div class="col-12 col-lg-10 offset-lg-1">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h3 class="fw-bold mb-1">My Bookings</h3>
+        <p class="text-muted mb-0">View and manage your property reservations</p>
+      </div>
+      <a href="/listings" class="btn btn-outline-dark btn-sm">
+        <i class="fa-solid fa-compass me-1"></i> Explore More Properties
+      </a>
+    </div>
+
+    <% if (!bookings || bookings.length === 0) { %>
+      <div class="card text-center p-5 shadow-sm border-0" style="border-radius: 1rem; background-color: #fafafa; border: 1px dashed #cccccc !important;">
+        <div class="my-3">
+          <i class="fa-regular fa-calendar-xmark text-muted" style="font-size: 3.5rem;"></i>
+        </div>
+        <h5 class="fw-bold text-dark">No Bookings Found</h5>
+        <p class="text-muted mb-4">You have not reserved any properties yet. Start planning your dream trip today!</p>
+        <div>
+          <a href="/listings" class="btn btn-dark add-btn text-white px-4 py-2 fw-semibold">
+            Explore Wanderlust Listings
+          </a>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="row g-4">
+        <% for (let booking of bookings) { %>
+          <div class="col-12">
+            <div class="card shadow-sm border-0 p-3" style="border-radius: 1rem; background-color: #ffffff; border: 1px solid #e5e7eb !important;">
+              <div class="row g-3 align-items-center">
+                <!-- Property Image -->
+                <div class="col-12 col-md-3">
+                  <% if (booking.listing) { %>
+                    <a href="/listings/<%= booking.listing._id %>">
+                      <img src="<%= booking.listing.image && booking.listing.image.url ? booking.listing.image.url : booking.listing.image %>" 
+                           alt="<%= booking.listing.title %>" 
+                           class="rounded w-100" 
+                           style="height: 140px; object-fit: cover;">
+                    </a>
+                  <% } else { %>
+                    <div class="bg-secondary rounded w-100 d-flex align-items-center justify-content-center text-white" style="height: 140px;">
+                      Property Unavailable
+                    </div>
+                  <% } %>
+                </div>
+
+                <!-- Booking Details -->
+                <div class="col-12 col-md-6">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-dark small"><%= booking.bookingId %></span>
+                    <% if (booking.status === "Confirmed") { %>
+                      <span class="badge bg-success">Confirmed</span>
+                    <% } else { %>
+                      <span class="badge bg-danger">Cancelled</span>
+                    <% } %>
+                  </div>
+
+                  <h5 class="fw-bold mb-1">
+                    <% if (booking.listing) { %>
+                      <a href="/listings/<%= booking.listing._id %>" class="text-decoration-none text-dark">
+                        <%= booking.listing.title %>
+                      </a>
+                    <% } else { %>
+                      Deleted Property
+                    <% } %>
+                  </h5>
+
+                  <p class="text-muted small mb-2">
+                    <% if (booking.listing) { %>
+                      <i class="fa-solid fa-location-dot text-danger me-1"></i><%= booking.listing.location %>, <%= booking.listing.country %>
+                    <% } %>
+                  </p>
+
+                  <div class="row g-2 text-muted small">
+                    <div class="col-auto">
+                      <i class="fa-regular fa-calendar me-1"></i>
+                      <strong><%= new Date(booking.checkIn).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }) %></strong>
+                      &nbsp;&mdash;&nbsp;
+                      <strong><%= new Date(booking.checkOut).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }) %></strong>
+                    </div>
+                    <div class="col-auto">
+                      &bull;&nbsp;<%= booking.nights %> night<%= booking.nights > 1 ? "s" : "" %>
+                    </div>
+                    <div class="col-auto">
+                      &bull;&nbsp;<%= booking.guests %> guest<%= booking.guests > 1 ? "s" : "" %>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Price & Action -->
+                <div class="col-12 col-md-3 text-md-end border-top border-md-top-0 pt-3 pt-md-0">
+                  <div class="mb-2">
+                    <span class="text-muted small d-block">Total Amount</span>
+                    <span class="fs-4 fw-bold text-dark">&#8377;<%= booking.totalPrice.toLocaleString("en-IN") %></span>
+                  </div>
+
+                  <div class="d-flex flex-md-column gap-2 justify-content-end">
+                    <% if (booking.listing) { %>
+                      <a href="/listings/<%= booking.listing._id %>" class="btn btn-outline-secondary btn-sm">
+                        View Property
+                      </a>
+                    <% } %>
+
+                    <% if (booking.status === "Confirmed") { %>
+                      <form action="/bookings/<%= booking._id %>/cancel" method="POST" class="d-inline"
+                            onsubmit="return confirm('Are you sure you want to cancel this booking? This will immediately free your reserved dates and send a cancellation confirmation email.')">
+                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                          <i class="fa-solid fa-ban me-1"></i> Cancel Booking
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <span class="text-muted small text-center d-block py-1">
+                        <i class="fa-solid fa-circle-xmark me-1 text-danger"></i> Booking Cancelled
+                      </span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+</div>
+

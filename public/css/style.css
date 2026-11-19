@@ -1,0 +1,235 @@
+ body{
+    font-family: "Plus Jakarka Sans",sans-serif !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+} 
+.container{
+   flex: 1;
+}
+ .navbar{
+    height: 5rem;
+    background-color: white;
+ }
+ .fa-compass{
+color: #fe424d;
+font-size: 2rem;
+ }
+ .nav-link{
+    color: #222222 ! important;
+ }
+
+ /*footer*/
+ .f-info-links a{
+    text-decoration: none;
+    color:#222222;
+ }
+ .f-info-links a:hover{
+    text-decoration: underline;
+ }
+ .f-info-links,.f-info-socials,.f-info-brands{
+width:100%;
+display: flex;
+align-items: center;
+justify-content: center;
+ }
+ 
+    
+ .f-info-socials i{
+    font-size: 1.2rem;
+    margin-right: 1 rem;
+ }
+ .f-info{
+    text-align: center;
+    height: 8rem;
+    background-color: #ebebeb;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+ }
+ /*cards*/
+ .listing-card{
+   border:none !important;
+   margin-bottom: 2rem;
+ }
+ .card-img-top{
+   border-radius: 1rem !important;
+   width:100% !important;
+   object-fit:cover !important;
+ }
+ .card-body{
+   padding: 0 !important;
+ }
+ .card-text p{
+font-weight: 400;
+ }
+ .listing-link{
+   text-decoration: none;
+ }
+/*card effect*/
+ .card-img-overlay{
+opacity:0;
+ }
+ .card-img-overlay:hover{
+   opacity: 0.2;
+   background-color: white;
+ }
+ /*new page*/
+ .add-btn{
+   background-color: #fe424d !important;
+   border: none !important;
+ }
+ /*edit page*/
+ .edit-btn{
+   background-color: #fe424d !important;
+   border: none !important;
+ }
+ /*show img*/
+ .show-img{
+   height: 30vh;
+ }
+ .btns{
+   display: flex;
+ }
+ .show-card{
+   padding-left: 0;
+   padding-right: 0;
+ }
+
+
+/* ==========================================================
+   ADVANCED SEARCH & FILTERING SYSTEM STYLES
+   ========================================================== */
+.filter-panel-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.search-input-box .form-control:focus {
+  border-color: #fe424d;
+  box-shadow: 0 0 0 0.2rem rgba(254, 66, 77, 0.15);
+}
+
+.amenity-chip {
+  display: inline-block;
+  cursor: pointer;
+  margin-right: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.amenity-chip input[type="checkbox"] {
+  display: none;
+}
+
+.amenity-chip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  color: #475569;
+  background: #ffffff;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.amenity-chip span:hover {
+  border-color: #fe424d;
+  color: #fe424d;
+}
+
+.amenity-chip input[type="checkbox"]:checked + span {
+  background: #fee2e2;
+  border-color: #fe424d;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.rating-chip {
+  display: inline-block;
+  cursor: pointer;
+  margin-right: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.rating-chip input[type="radio"] {
+  display: none;
+}
+
+.rating-chip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  color: #475569;
+  background: #ffffff;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.rating-chip span:hover {
+  border-color: #f59e0b;
+  color: #b45309;
+}
+
+.rating-chip input[type="radio"]:checked + span {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  color: #b45309;
+  font-weight: 600;
+}
+
+.active-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.825rem;
+  font-weight: 500;
+  margin-right: 0.4rem;
+  margin-bottom: 0.4rem;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.active-filter-badge:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.empty-search-card {
+  background: #ffffff;
+  border: 2px dashed #e2e8f0;
+  border-radius: 1.5rem;
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.card-rating-badge {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.navbar-search-bar .form-control:focus {
+  border-color: #fe424d;
+  box-shadow: 0 0 0 0.15rem rgba(254, 66, 77, 0.15);
+}

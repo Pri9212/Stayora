@@ -1,0 +1,113 @@
+<% layout("/layouts/boilerplate.ejs") -%>
+
+<div class="row mt-4 mb-5">
+  <div class="col-12 col-md-10 offset-md-1 col-lg-8 offset-lg-2">
+    <!-- Success Banner -->
+    <div class="card shadow-sm border-0 p-4 text-center mb-4" style="border-radius: 1rem; background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%); border: 1px solid #bbf7d0 !important;">
+      <div class="my-3">
+        <i class="fa-solid fa-circle-check text-success" style="font-size: 4rem;"></i>
+      </div>
+      <h2 class="fw-bold text-success mb-2">Booking Confirmed!</h2>
+
+      <!-- Email Delivery Status Alert -->
+      <% if (booking.emailSent) { %>
+        <p class="text-success mb-3">
+          <i class="fa-regular fa-envelope me-1"></i>
+          A confirmation email has been sent to <strong><%= booking.user ? booking.user.email : "your registered email" %></strong>.
+        </p>
+      <% } else { %>
+        <div class="alert alert-warning py-2 px-3 mb-3 small d-inline-block text-start" role="alert">
+          <i class="fa-solid fa-triangle-exclamation me-1 text-warning"></i>
+          <strong>Note:</strong> Your reservation is confirmed in our database. However, the confirmation email could not be delivered to <strong><%= booking.user ? booking.user.email : "your email" %></strong> (Email service is not yet configured or was unreachable).
+        </div>
+      <% } %>
+
+      <div>
+        <span class="badge bg-dark py-2 px-3 fs-6">
+          Booking ID: <%= booking.bookingId %>
+        </span>
+      </div>
+    </div>
+
+    <!-- Booking Summary Card -->
+    <div class="card shadow-sm border-0 p-4 mb-4" style="border-radius: 1rem; background-color: #ffffff; border: 1px solid #e5e7eb !important;">
+      <h5 class="fw-bold mb-3 border-bottom pb-2">Reservation Summary</h5>
+
+      <div class="row g-3">
+        <!-- Property Info -->
+        <div class="col-12 col-md-4">
+          <img src="<%= booking.listing.image && booking.listing.image.url ? booking.listing.image.url : booking.listing.image %>" 
+               alt="<%= booking.listing.title %>" 
+               class="rounded w-100" 
+               style="height: 160px; object-fit: cover;">
+        </div>
+        <div class="col-12 col-md-8">
+          <h5 class="fw-bold mb-1"><%= booking.listing.title %></h5>
+          <p class="text-muted small mb-2">
+            <i class="fa-solid fa-location-dot text-danger me-1"></i>
+            <%= booking.listing.location %>, <%= booking.listing.country %>
+          </p>
+          <p class="small text-secondary mb-2">
+            Host: <strong><%= booking.owner ? booking.owner.username : "Host" %></strong>
+          </p>
+          <span class="badge bg-success me-2">Confirmed</span>
+        </div>
+      </div>
+
+      <hr class="my-4">
+
+      <!-- Dates & Guests -->
+      <div class="row g-3">
+        <div class="col-6 col-md-3">
+          <span class="text-muted small d-block">Check-in</span>
+          <span class="fw-bold"><%= new Date(booking.checkIn).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }) %></span>
+        </div>
+        <div class="col-6 col-md-3">
+          <span class="text-muted small d-block">Check-out</span>
+          <span class="fw-bold"><%= new Date(booking.checkOut).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }) %></span>
+        </div>
+        <div class="col-6 col-md-3">
+          <span class="text-muted small d-block">Duration</span>
+          <span class="fw-bold"><%= booking.nights %> night<%= booking.nights > 1 ? "s" : "" %></span>
+        </div>
+        <div class="col-6 col-md-3">
+          <span class="text-muted small d-block">Guests</span>
+          <span class="fw-bold"><%= booking.guests %> guest<%= booking.guests > 1 ? "s" : "" %></span>
+        </div>
+      </div>
+
+      <hr class="my-4">
+
+      <!-- Price Breakdown -->
+      <h6 class="fw-bold mb-3">Reservation Amount Breakdown</h6>
+      <div class="d-flex justify-content-between py-1 small">
+        <span>&#8377;<%= booking.pricePerNight ? booking.pricePerNight.toLocaleString("en-IN") : booking.listing.price.toLocaleString("en-IN") %> × <%= booking.nights %> night<%= booking.nights > 1 ? "s" : "" %></span>
+        <span>&#8377;<%= (booking.pricePerNight * booking.nights).toLocaleString("en-IN") %></span>
+      </div>
+      <div class="d-flex justify-content-between py-1 small">
+        <span>Cleaning fee</span>
+        <span>&#8377;<%= booking.cleaningFee.toLocaleString("en-IN") %></span>
+      </div>
+      <hr class="my-2">
+      <div class="d-flex justify-content-between py-1 fw-bold fs-6">
+        <span>Total Amount</span>
+        <span class="text-danger">&#8377;<%= booking.totalPrice.toLocaleString("en-IN") %></span>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex flex-wrap gap-2 justify-content-between">
+      <a href="/my-bookings" class="btn btn-dark add-btn text-white px-4 py-2 fw-semibold">
+        <i class="fa-solid fa-list-check me-2"></i>Go to My Bookings
+      </a>
+      <div class="d-flex gap-2">
+        <a href="/listings/<%= booking.listing._id %>" class="btn btn-outline-dark px-3 py-2">
+          View Property
+        </a>
+        <a href="/listings" class="btn btn-outline-secondary px-3 py-2">
+          Explore Listings
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

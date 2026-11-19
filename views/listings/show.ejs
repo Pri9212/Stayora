@@ -1,0 +1,418 @@
+<% layout("/layouts/boilerplate.ejs") -%>
+
+<div class="row">
+  <div class="col-8 offset-3">
+    <h3><%=listing.title%></h3>
+  </div>        
+       
+  <div class="card col-6 offset-3 show-card listing-card">
+    <img src="<%= listing.image && listing.image.url ? listing.image.url : listing.image %>" class="card-img-top show-img" alt="Listing_image">
+    <div class="card-body">
+      <i><p> owned by <%= listing.owner ? listing.owner.username : 'Host' %></p></i>
+      <p class="card-text"><%=listing.description%></p>
+      <p class="card-text">&#8377;<%= listing.price ? listing.price.toLocaleString("en-IN") : 0 %> / night</p>
+      <p class="card-text"><%=listing.location%></p>
+      <p class="card-text"><%=listing.country%></p>
+      <% if (listing.amenities && listing.amenities.length > 0) { %>
+        <div class="mt-3 pt-2 border-top">
+          <p class="fw-semibold mb-2 text-dark"><i class="fa-solid fa-bell-concierge text-danger me-1"></i> What this place offers</p>
+          <div class="d-flex flex-wrap gap-2">
+            <% for(let amenity of listing.amenities) { %>
+              <span class="badge bg-light text-dark border p-2 fw-normal">
+                <%= amenity %>
+              </span>
+            <% } %>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <% if(curruser && listing.owner && curruser._id.equals(listing.owner._id)) { %>
+    <div class="btns col-6 offset-3 mb-3 p-0">
+      <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark col-2 edit-btn">Edit</a>
+      <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="d-inline ms-3">
+        <button class="btn btn-dark">DELETE</button>
+      </form>
+    </div>
+  <% } %>
+
+  <!-- BOOKING / RESERVE SECTION -->
+  <div class="card col-6 offset-3 mb-4 shadow-sm border p-3" style="border-radius: 1rem; background-color: #ffffff;">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <span class="fs-4 fw-bold text-dark">&#8377;<%= listing.price ? listing.price.toLocaleString("en-IN") : 0 %></span>
+          <span class="text-muted"> / night</span>
+        </div>
+        <div>
+          <span class="badge bg-light text-dark border">
+            <i class="fa-solid fa-bolt text-danger me-1"></i> Instant Booking
+          </span>
+        </div>
+      </div>
+
+      <% if (curruser && listing.owner && curruser._id.equals(listing.owner._id)) { %>
+        <div class="alert alert-info py-2 mb-0" role="alert">
+          <i class="fa-solid fa-circle-info me-2"></i>You are the host of this property. Owners cannot book their own listings.
+          <div class="mt-2">
+            <a href="/owner/bookings" class="btn btn-sm btn-outline-dark">View Host Dashboard</a>
+          </div>
+        </div>
+      <% } else { %>
+        <form action="/listings/<%= listing._id %>/book" method="GET" id="reservationForm" class="needs-validation">
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label for="checkIn" class="form-label small fw-semibold">Check-in Date</label>
+              <input type="date" class="form-control" id="checkIn" name="checkIn" required>
+            </div>
+            <div class="col-md-6">
+              <label for="checkOut" class="form-label small fw-semibold">Check-out Date</label>
+              <input type="date" class="form-control" id="checkOut" name="checkOut" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="guests" class="form-label small fw-semibold">Number of Guests</label>
+            <input type="number" class="form-control" id="guests" name="guests" min="1" max="10" value="1" required>
+          </div>
+
+          <!-- Dynamic Price Calculation Breakdown -->
+          <div id="priceCalculationBox" class="p-3 mb-3 rounded" style="background-color: #f8f9fa; display: none; border: 1px solid #e9ecef;">
+            <h6 class="fw-bold mb-2">Price Details</h6>
+            <div class="d-flex justify-content-between mb-1">
+              <span id="rateLabel">&#8377;<%= listing.price %> × 0 nights</span>
+              <span id="baseTotalLabel">&#8377;0</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+              <span>Cleaning fee</span>
+              <span>&#8377;500</span>
+            </div>
+            <hr class="my-2">
+            <div class="d-flex justify-content-between fw-bold fs-6">
+              <span>Total before taxes</span>
+              <span id="grandTotalLabel" class="text-danger">&#8377;0</span>
+            </div>
+          </div>
+
+          <div id="dateOverlapAlert" class="alert alert-danger py-2 small mb-3" style="display: none;">
+            <i class="fa-solid fa-triangle-exclamation me-1"></i> These dates are already booked for this property. Please pick another date range.
+          </div>
+
+          <button type="submit" id="reserveBtn" class="btn btn-dark w-100 py-2 add-btn text-white fw-semibold">
+            <i class="fa-regular fa-calendar-check me-2"></i>Book Now / Reserve
+          </button>
+          <p class="text-center text-muted small mt-2 mb-0">Free cancellation &bull; Instant confirmation</p>
+        </form>
+      <% } %>
+    </div>
+  </div>
+
+  <hr class="col-8 offset-2 my-4">
+
+  <div class="col-8 offset-2 mb-4 review-section-container">
+    <% if(curruser) { %>
+      <div class="review-form-card">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="fa-solid fa-pen-to-square text-danger fs-5"></i>
+          <h4 class="review-header-title mb-0">Share Your Experience</h4>
+        </div>
+        <p class="text-muted small mb-3">Rate your stay and help future travelers plan their trip.</p>
+
+        <form method="POST" action="/listings/<%=listing._id%>/reviews" novalidate class="needs-validation">
+          <!-- Starability Slot Machine Rating -->
+          <div class="rating-picker-wrapper">
+            <div>
+              <label class="form-label fw-semibold text-dark small mb-1 d-block">Overall Rating</label>
+              <fieldset class="starability-slot">
+                <legend class="visually-hidden">Rating</legend>
+                <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" aria-label="No rating." />
+                <input type="radio" id="first-rate1" name="review[rating]" value="1" />
+                <label for="first-rate1" title="Terrible">1 star</label>
+                <input type="radio" id="first-rate2" name="review[rating]" value="2" />
+                <label for="first-rate2" title="Not good">2 stars</label>
+                <input type="radio" id="first-rate3" name="review[rating]" value="3" />
+                <label for="first-rate3" title="Average">3 stars</label>
+                <input type="radio" id="first-rate4" name="review[rating]" value="4" />
+                <label for="first-rate4" title="Very good">4 stars</label>
+                <input type="radio" id="first-rate5" name="review[rating]" value="5" checked />
+                <label for="first-rate5" title="Amazing">5 stars</label>
+              </fieldset>
+            </div>
+            <div class="align-self-center mt-3">
+              <span id="ratingScoreText" class="rating-score-display active">
+                <i class="fa-solid fa-star text-warning"></i> 5 out of 5 &ndash; Amazing!
+              </span>
+            </div>
+          </div>
+
+          <!-- Review Comment -->
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label for="reviewComment" class="form-label fw-semibold text-dark small mb-0">Your Review</label>
+              <span id="charCount" class="char-counter">0 / 500 characters</span>
+            </div>
+            <textarea 
+              name="review[comment]" 
+              id="reviewComment" 
+              rows="4" 
+              maxlength="500"
+              class="form-control review-textarea" 
+              placeholder="Tell us about your experience, stay quality, amenities, or tips for future guests..." 
+              required></textarea>
+            <div class="invalid-feedback">Please share your experience in the comment before submitting.</div>
+          </div>
+
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-dark px-4 py-2 add-btn text-white fw-semibold rounded-3 shadow-sm">
+              <i class="fa-regular fa-paper-plane me-2"></i>Submit Review
+            </button>
+          </div>
+        </form>
+      </div>
+    <% } else { %>
+      <div class="alert alert-light border d-flex align-items-center justify-content-between p-3 rounded-4 mb-4 shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+          <i class="fa-regular fa-comment-dots fa-2x text-muted"></i>
+          <div>
+            <div class="fw-semibold text-dark">Have you stayed here?</div>
+            <div class="text-muted small">Log in to leave a star rating and share your review with other travelers.</div>
+          </div>
+        </div>
+        <div>
+          <a href="/login" class="btn btn-outline-dark btn-sm rounded-pill px-3">Log in</a>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- REVIEWS SUMMARY & LIST (Airbnb / Booking.com Style) -->
+    <% 
+      let reviewsList = listing.reviews || [];
+      let totalCount = reviewsList.length;
+      let averageRating = 0;
+      if (totalCount > 0) {
+        let sum = reviewsList.reduce((acc, r) => acc + (r.rating || 0), 0);
+        averageRating = (sum / totalCount).toFixed(1);
+      }
+    %>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <h4 class="review-header-title mb-0">Guest Reviews</h4>
+        <% if (totalCount > 0) { %>
+          <span class="review-rating-summary">
+            <i class="fa-solid fa-star text-warning"></i> <%= averageRating %> &bull; <%= totalCount %> <%= totalCount === 1 ? 'review' : 'reviews' %>
+          </span>
+        <% } %>
+      </div>
+    </div>
+
+    <% if (totalCount === 0) { %>
+      <div class="empty-reviews-state mb-4">
+        <div class="mb-2">
+          <i class="fa-regular fa-comment-dots fa-3x text-muted opacity-50"></i>
+        </div>
+        <h6 class="fw-bold text-dark mb-1">No reviews yet</h6>
+        <p class="text-muted small mb-0">Be the first to share your experience staying at <%= listing.title %>!</p>
+      </div>
+    <% } else { %>
+      <div class="row g-3 mb-4">
+        <% for(let review of reviewsList) { %>
+          <div class="col-md-6">
+            <div class="review-card-item">
+              <div>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="review-avatar">
+                      <%= review.author && review.author.username ? review.author.username.charAt(0).toUpperCase() : 'G' %>
+                    </div>
+                    <div>
+                      <div class="review-author-name">
+                        @<%= review.author ? review.author.username : 'Guest' %>
+                      </div>
+                      <div class="review-date-badge">
+                        <%= review.created_at ? new Date(review.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Recent" %>
+                      </div>
+                    </div>
+                  </div>
+                  <% if (curruser && review.author && curruser._id.equals(review.author._id)) { %>
+                    <form method="POST" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this review?');">
+                      <button class="review-delete-btn" title="Delete Review">
+                        <i class="fa-regular fa-trash-can me-1"></i>Delete
+                      </button>
+                    </form>
+                  <% } %>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <p class="starability-result mb-0" data-rating="<%= review.rating %>">
+                    Rated: <%= review.rating %> stars
+                  </p>
+                  <span class="badge bg-light text-dark border small fw-normal"><%= review.rating %> / 5</span>
+                </div>
+
+                <p class="review-text-body mb-0">
+                  <%= review.comment %>
+                </p>
+              </div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const pricePerNight = <%= listing.price || 0 %>;
+    const cleaningFee = 500;
+    const bookedRanges = <%- JSON.stringify(typeof bookings !== "undefined" && bookings ? bookings.map(b => ({ checkIn: b.checkIn, checkOut: b.checkOut })) : []) %>;
+
+    const checkInInput = document.getElementById("checkIn");
+    const checkOutInput = document.getElementById("checkOut");
+    const priceBox = document.getElementById("priceCalculationBox");
+    const rateLabel = document.getElementById("rateLabel");
+    const baseTotalLabel = document.getElementById("baseTotalLabel");
+    const grandTotalLabel = document.getElementById("grandTotalLabel");
+    const overlapAlert = document.getElementById("dateOverlapAlert");
+    const reserveBtn = document.getElementById("reserveBtn");
+
+    if (!checkInInput || !checkOutInput) return;
+
+    // Set checkIn minimum date to today
+    const todayStr = new Date().toISOString().split("T")[0];
+    checkInInput.min = todayStr;
+
+    function recalculate() {
+      const checkInVal = checkInInput.value;
+      const checkOutVal = checkOutInput.value;
+
+      if (!checkInVal) {
+        priceBox.style.display = "none";
+        overlapAlert.style.display = "none";
+        if (reserveBtn) reserveBtn.disabled = false;
+        return;
+      }
+
+      // Update minimum check-out date
+      const checkInDate = new Date(checkInVal);
+      const nextDay = new Date(checkInDate.getTime() + (24 * 60 * 60 * 1000));
+      checkOutInput.min = nextDay.toISOString().split("T")[0];
+
+      if (!checkOutVal) {
+        priceBox.style.display = "none";
+        overlapAlert.style.display = "none";
+        if (reserveBtn) reserveBtn.disabled = false;
+        return;
+      }
+
+      const checkOutDate = new Date(checkOutVal);
+      if (checkOutDate <= checkInDate) {
+        priceBox.style.display = "none";
+        overlapAlert.style.display = "none";
+        if (reserveBtn) reserveBtn.disabled = true;
+        return;
+      }
+
+      // Check overlap with existing confirmed bookings
+      const start = checkInDate.getTime();
+      const end = checkOutDate.getTime();
+
+      let hasOverlap = false;
+      for (const range of bookedRanges) {
+        const bStart = new Date(range.checkIn).getTime();
+        const bEnd = new Date(range.checkOut).getTime();
+        if (start < bEnd && end > bStart) {
+          hasOverlap = true;
+          break;
+        }
+      }
+
+      if (hasOverlap) {
+        overlapAlert.style.display = "block";
+        priceBox.style.display = "none";
+        if (reserveBtn) reserveBtn.disabled = true;
+        return;
+      } else {
+        overlapAlert.style.display = "none";
+        if (reserveBtn) reserveBtn.disabled = false;
+      }
+
+      // Calculate nights and dynamic breakdown
+      const nights = Math.round((end - start) / (1000 * 60 * 60 * 24));
+      if (nights >= 1) {
+        const base = pricePerNight * nights;
+        const total = base + cleaningFee;
+
+        rateLabel.textContent = `₹${pricePerNight.toLocaleString("en-IN")} × ${nights} night${nights > 1 ? "s" : ""}`;
+        baseTotalLabel.textContent = `₹${base.toLocaleString("en-IN")}`;
+        grandTotalLabel.textContent = `₹${total.toLocaleString("en-IN")}`;
+        priceBox.style.display = "block";
+      }
+    }
+
+    checkInInput.addEventListener("change", recalculate);
+    checkOutInput.addEventListener("change", recalculate);
+  })();
+
+  // Review Rating Feedback & Character Counter Script
+  (function () {
+    const ratingInputs = document.querySelectorAll('input[name="review[rating]"]');
+    const ratingScoreDisplay = document.getElementById("ratingScoreText");
+    const ratingLabels = {
+      "1": "1 out of 5 &ndash; Terrible",
+      "2": "2 out of 5 &ndash; Not good",
+      "3": "3 out of 5 &ndash; Average",
+      "4": "4 out of 5 &ndash; Very good",
+      "5": "5 out of 5 &ndash; Amazing!"
+    };
+
+    function updateRatingDisplay(val) {
+      if (ratingScoreDisplay && ratingLabels[val]) {
+        ratingScoreDisplay.innerHTML = `<i class="fa-solid fa-star text-warning"></i> ` + ratingLabels[val];
+        ratingScoreDisplay.classList.add("active");
+      }
+    }
+
+    ratingInputs.forEach((input) => {
+      input.addEventListener("change", (e) => {
+        updateRatingDisplay(e.target.value);
+      });
+    });
+
+    const labels = document.querySelectorAll(".starability-slot label");
+    labels.forEach((label) => {
+      label.addEventListener("mouseenter", () => {
+        const forId = label.getAttribute("for");
+        const correspondingInput = document.getElementById(forId);
+        if (correspondingInput && ratingLabels[correspondingInput.value] && ratingScoreDisplay) {
+          ratingScoreDisplay.innerHTML = `<i class="fa-solid fa-star text-warning"></i> ` + ratingLabels[correspondingInput.value];
+        }
+      });
+      label.addEventListener("mouseleave", () => {
+        const checkedInput = document.querySelector('input[name="review[rating]"]:checked');
+        if (checkedInput) {
+          updateRatingDisplay(checkedInput.value);
+        }
+      });
+    });
+
+    // Character counter for review comment
+    const reviewComment = document.getElementById("reviewComment");
+    const charCountDisplay = document.getElementById("charCount");
+    if (reviewComment && charCountDisplay) {
+      reviewComment.addEventListener("input", () => {
+        const len = reviewComment.value.length;
+        charCountDisplay.textContent = `${len} / 500 characters`;
+        if (len >= 480) {
+          charCountDisplay.classList.add("text-danger");
+          charCountDisplay.classList.remove("text-muted");
+        } else {
+          charCountDisplay.classList.remove("text-danger");
+          charCountDisplay.classList.add("text-muted");
+        }
+      });
+    }
+  })();
+</script>

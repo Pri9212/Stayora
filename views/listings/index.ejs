@@ -1,0 +1,357 @@
+<% layout("/layouts/boilerplate.ejs") -%>
+
+<!-- ADVANCED SEARCH & FILTERING PANEL -->
+<div class="filter-panel-card mb-4 mt-2">
+  <form action="/listings" method="GET" id="searchFilterForm">
+    <!-- Top Row: Main Search & Quick Controls -->
+    <div class="row g-2 align-items-center">
+      <!-- Search Bar -->
+      <div class="col-lg-5 col-md-12">
+        <div class="input-group search-input-box">
+          <span class="input-group-text bg-white border-end-0 text-muted">
+            <i class="fa-solid fa-magnifying-glass" style="color: #fe424d;"></i>
+          </span>
+          <input 
+            type="text" 
+            name="q" 
+            id="searchInput" 
+            class="form-control border-start-0 ps-0 shadow-none" 
+            placeholder="Search destination, property name, or keywords..." 
+            value="<%= typeof filters !== 'undefined' ? filters.q : '' %>">
+          <% if (typeof filters !== 'undefined' && filters.q) { %>
+            <button class="btn btn-outline-secondary border-start-0 bg-white" type="button" onclick="clearSearchField()" title="Clear search text">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Sorting Options -->
+      <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="input-group">
+          <span class="input-group-text bg-white text-muted">
+            <i class="fa-solid fa-arrow-down-wide-short"></i>
+          </span>
+          <select name="sort" class="form-select shadow-none" onchange="this.form.submit()">
+            <option value="" <%= (typeof filters === 'undefined' || !filters.sort) ? 'selected' : '' %>>Sort by: Recommended</option>
+            <option value="price_asc" <%= (typeof filters !== 'undefined' && filters.sort === 'price_asc') ? 'selected' : '' %>>Price: Low to High</option>
+            <option value="price_desc" <%= (typeof filters !== 'undefined' && filters.sort === 'price_desc') ? 'selected' : '' %>>Price: High to Low</option>
+            <option value="rating_desc" <%= (typeof filters !== 'undefined' && filters.sort === 'rating_desc') ? 'selected' : '' %>>Highest Rated</option>
+            <option value="newest" <%= (typeof filters !== 'undefined' && filters.sort === 'newest') ? 'selected' : '' %>>Newest Listings</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Toggle Detailed Filters & Submit -->
+      <div class="col-lg-4 col-md-6 col-sm-6 d-flex gap-2 justify-content-end">
+        <button 
+          class="btn btn-outline-dark d-flex align-items-center gap-2" 
+          type="button" 
+          data-bs-toggle="collapse" 
+          data-bs-target="#advancedFiltersCollapse" 
+          aria-expanded="<%= (typeof hasActiveFilters !== 'undefined' && hasActiveFilters) ? 'true' : 'false' %>" 
+          aria-controls="advancedFiltersCollapse">
+          <i class="fa-solid fa-sliders"></i>
+          <span>Filters</span>
+          <% 
+            let activeFiltersCount = 0;
+            if (typeof filters !== 'undefined') {
+              if (filters.minPrice || filters.maxPrice) activeFiltersCount++;
+              if (filters.minRating) activeFiltersCount++;
+              if (filters.amenities && filters.amenities.length > 0) activeFiltersCount += filters.amenities.length;
+            }
+          %>
+          <% if (activeFiltersCount > 0) { %>
+            <span class="badge bg-danger rounded-pill"><%= activeFiltersCount %></span>
+          <% } %>
+        </button>
+
+        <button type="submit" class="btn btn-dark add-btn text-white fw-semibold px-4">
+          Search
+        </button>
+
+        <% if (typeof hasActiveFilters !== 'undefined' && hasActiveFilters) { %>
+          <a href="/listings" class="btn btn-outline-secondary" title="Reset all filters">
+            <i class="fa-solid fa-rotate-left"></i>
+          </a>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Detailed Collapsible Filters: Price, Rating & Amenities -->
+    <div class="collapse <%= (typeof hasActiveFilters !== 'undefined' && hasActiveFilters) ? 'show' : '' %> mt-3 pt-3 border-top" id="advancedFiltersCollapse">
+      <div class="row g-3">
+        <!-- Price Range Filter -->
+        <div class="col-lg-4 col-md-6">
+          <label class="form-label fw-semibold small text-dark mb-1">
+            <i class="fa-solid fa-tag me-1 text-danger"></i> Price Range (₹ per night)
+          </label>
+          <div class="d-flex align-items-center gap-2">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-light text-muted">&#8377;</span>
+              <input 
+                type="number" 
+                name="minPrice" 
+                class="form-control" 
+                placeholder="Min" 
+                min="0"
+                value="<%= typeof filters !== 'undefined' ? filters.minPrice : '' %>">
+            </div>
+            <span class="text-muted small">&ndash;</span>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-light text-muted">&#8377;</span>
+              <input 
+                type="number" 
+                name="maxPrice" 
+                class="form-control" 
+                placeholder="Max" 
+                min="0"
+                value="<%= typeof filters !== 'undefined' ? filters.maxPrice : '' %>">
+            </div>
+          </div>
+        </div>
+
+        <!-- Rating Filter -->
+        <div class="col-lg-4 col-md-6">
+          <label class="form-label fw-semibold small text-dark mb-1">
+            <i class="fa-solid fa-star me-1 text-warning"></i> Customer Rating
+          </label>
+          <div class="d-flex flex-wrap align-items-center">
+            <label class="rating-chip">
+              <input type="radio" name="minRating" value="" <%= (typeof filters === 'undefined' || !filters.minRating) ? 'checked' : '' %>>
+              <span>All</span>
+            </label>
+            <label class="rating-chip">
+              <input type="radio" name="minRating" value="3" <%= (typeof filters !== 'undefined' && filters.minRating == 3) ? 'checked' : '' %>>
+              <span>3★ &amp; above</span>
+            </label>
+            <label class="rating-chip">
+              <input type="radio" name="minRating" value="4" <%= (typeof filters !== 'undefined' && filters.minRating == 4) ? 'checked' : '' %>>
+              <span>4★ &amp; above</span>
+            </label>
+            <label class="rating-chip">
+              <input type="radio" name="minRating" value="5" <%= (typeof filters !== 'undefined' && filters.minRating == 5) ? 'checked' : '' %>>
+              <span>5★ only</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="col-lg-4 col-md-12 d-flex align-items-end justify-content-lg-end gap-2">
+          <button type="submit" class="btn btn-dark add-btn text-white btn-sm px-4 py-2 fw-semibold">
+            <i class="fa-solid fa-filter me-1"></i> Apply Filters
+          </button>
+          <a href="/listings" class="btn btn-outline-secondary btn-sm px-3 py-2">
+            Clear All
+          </a>
+        </div>
+
+        <!-- Amenities Filter (Multi-select) -->
+        <div class="col-12 mt-2">
+          <label class="form-label fw-semibold small text-dark mb-1">
+            <i class="fa-solid fa-bell-concierge me-1 text-danger"></i> Popular Amenities
+          </label>
+          <div class="d-flex flex-wrap">
+            <% 
+              const availableAmenities = [
+                { name: "Wi-Fi", icon: "fa-wifi" },
+                { name: "Air Conditioning", icon: "fa-snowflake" },
+                { name: "Parking", icon: "fa-square-parking" },
+                { name: "Swimming Pool", icon: "fa-person-swimming" },
+                { name: "Kitchen", icon: "fa-utensils" },
+                { name: "TV", icon: "fa-tv" },
+                { name: "Dedicated Workspace", icon: "fa-laptop" },
+                { name: "Pet Friendly", icon: "fa-paw" },
+              ];
+              const selectedAmenitiesList = (typeof filters !== 'undefined' && filters.amenities) ? filters.amenities : [];
+            %>
+            <% for (let amenity of availableAmenities) { %>
+              <label class="amenity-chip">
+                <input 
+                  type="checkbox" 
+                  name="amenities" 
+                  value="<%= amenity.name %>" 
+                  <%= selectedAmenitiesList.includes(amenity.name) ? 'checked' : '' %>>
+                <span>
+                  <i class="fa-solid <%= amenity.icon %>"></i>
+                  <%= amenity.name %>
+                </span>
+              </label>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- ACTIVE FILTER BADGES ROW (IF ANY ACTIVE FILTERS) -->
+<% if (typeof hasActiveFilters !== 'undefined' && hasActiveFilters) { %>
+  <div class="d-flex flex-wrap align-items-center mb-3">
+    <span class="text-muted small me-2"><i class="fa-solid fa-filter small me-1"></i> Active Filters:</span>
+    
+    <% if (filters.q) { %>
+      <a href="javascript:void(0)" onclick="removeFilter('q')" class="active-filter-badge">
+        Search: "<%= filters.q %>" <i class="fa-solid fa-xmark close-icon"></i>
+      </a>
+    <% } %>
+
+    <% if (filters.minPrice || filters.maxPrice) { %>
+      <a href="javascript:void(0)" onclick="removePriceFilter()" class="active-filter-badge">
+        Price: &#8377;<%= filters.minPrice || '0' %> &ndash; &#8377;<%= filters.maxPrice || 'Any' %> <i class="fa-solid fa-xmark close-icon"></i>
+      </a>
+    <% } %>
+
+    <% if (filters.minRating) { %>
+      <a href="javascript:void(0)" onclick="removeFilter('minRating')" class="active-filter-badge">
+        Rating: <%= filters.minRating %>★ &amp; above <i class="fa-solid fa-xmark close-icon"></i>
+      </a>
+    <% } %>
+
+    <% if (filters.amenities && filters.amenities.length > 0) { %>
+      <% for (let a of filters.amenities) { %>
+        <a href="javascript:void(0)" onclick="removeAmenityFilter('<%= a %>')" class="active-filter-badge">
+          <%= a %> <i class="fa-solid fa-xmark close-icon"></i>
+        </a>
+      <% } %>
+    <% } %>
+
+    <% if (filters.sort) { %>
+      <a href="javascript:void(0)" onclick="removeFilter('sort')" class="active-filter-badge">
+        Sorted <i class="fa-solid fa-xmark close-icon"></i>
+      </a>
+    <% } %>
+
+    <a href="/listings" class="btn btn-link btn-sm text-decoration-none text-danger p-0 ms-2 small fw-semibold">
+      Clear all
+    </a>
+  </div>
+<% } %>
+
+<!-- RESULTS HEADER -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h4 class="fw-bold mb-0 text-dark">
+      <% if (typeof filters !== 'undefined' && filters.q) { %>
+        Stays in "<%= filters.q %>"
+      <% } else { %>
+        All Stays
+      <% } %>
+    </h4>
+    <p class="text-muted small mb-0">
+      <%= typeof totalCount !== 'undefined' ? totalCount : alllistings.length %> 
+      <%= (typeof totalCount !== 'undefined' ? totalCount : alllistings.length) === 1 ? 'property' : 'properties' %> available
+    </p>
+  </div>
+</div>
+
+<!-- EMPTY STATE IF NO PROPERTIES FOUND -->
+<% if (alllistings.length === 0) { %>
+  <div class="empty-search-card">
+    <div class="mb-3">
+      <i class="fa-regular fa-compass fa-3x" style="color: #fe424d; opacity: 0.85;"></i>
+    </div>
+    <h5 class="fw-bold text-dark mb-2">No properties found</h5>
+    <p class="text-muted small mx-auto mb-4" style="max-width: 480px;">
+      We couldn't find any properties matching your current search or filters. Try adjusting your search criteria, widening your price range, or clearing some amenity filters.
+    </p>
+    <a href="/listings" class="btn add-btn text-white fw-semibold px-4 py-2 rounded-3 shadow-sm">
+      <i class="fa-solid fa-rotate-left me-2"></i>Reset All Filters
+    </a>
+  </div>
+<% } else { %>
+  <!-- LISTINGS GRID -->
+  <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
+    <% for (let listing of alllistings) { %>
+      <a href="/listings/<%= listing._id %>" class="listing-link">
+        <div class="card listing-card" style="width: 20rem;">
+          <img src="<%= listing.image && listing.image.url ? listing.image.url : listing.image %>" 
+               class="card-img-top" 
+               alt="listing_image"  
+               style="height: 20rem; object-fit: cover;">
+          <div class="card-img-overlay">
+            <p class="card-text"><%= listing.description %></p>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mt-1">
+              <p class="card-text mb-0" style="flex: 1;">
+                <b><%= listing.title %><br /></b>
+                <span class="text-muted small"><%= listing.location %>, <%= listing.country %></span><br/>
+                &#8377;<%= listing.price ? listing.price.toLocaleString("en-IN") : 0 %>/night
+              </p>
+              <% if (listing.avgRating && listing.avgRating > 0) { %>
+                <span class="card-rating-badge ms-2">
+                  <i class="fa-solid fa-star text-warning"></i> <%= listing.avgRating %>
+                  <span class="text-muted small fw-normal">(<%= listing.reviewCount %>)</span>
+                </span>
+              <% } else { %>
+                <span class="badge bg-light text-muted border small ms-2">
+                  <i class="fa-regular fa-star"></i> New
+                </span>
+              <% } %>
+            </div>
+
+            <!-- Optional quick amenity preview -->
+            <% if (listing.amenities && listing.amenities.length > 0) { %>
+              <div class="mt-2 text-muted small text-truncate">
+                <i class="fa-solid fa-check text-success me-1"></i>
+                <%= listing.amenities.slice(0, 3).join(" • ") %>
+                <% if (listing.amenities.length > 3) { %>
+                  +<%= listing.amenities.length - 3 %> more
+                <% } %>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </a>
+    <% } %>
+  </div>
+<% } %>
+
+<!-- CLIENT-SIDE SCRIPT FOR FILTER TAGS -->
+<script>
+  function clearSearchField() {
+    const input = document.getElementById("searchInput");
+    if (input) {
+      input.value = "";
+      document.getElementById("searchFilterForm").submit();
+    }
+  }
+
+  function removeFilter(filterName) {
+    const form = document.getElementById("searchFilterForm");
+    if (!form) return;
+    const elements = form.elements[filterName];
+    if (elements) {
+      if (elements.length && elements[0].type === "radio") {
+        for (let r of elements) {
+          if (r.value === "") r.checked = true;
+          else r.checked = false;
+        }
+      } else {
+        elements.value = "";
+      }
+    }
+    form.submit();
+  }
+
+  function removePriceFilter() {
+    const form = document.getElementById("searchFilterForm");
+    if (!form) return;
+    if (form.elements["minPrice"]) form.elements["minPrice"].value = "";
+    if (form.elements["maxPrice"]) form.elements["maxPrice"].value = "";
+    form.submit();
+  }
+
+  function removeAmenityFilter(amenityValue) {
+    const form = document.getElementById("searchFilterForm");
+    if (!form) return;
+    const checkboxes = form.querySelectorAll('input[name="amenities"]');
+    checkboxes.forEach(cb => {
+      if (cb.value === amenityValue) {
+        cb.checked = false;
+      }
+    });
+    form.submit();
+  }
+</script>
